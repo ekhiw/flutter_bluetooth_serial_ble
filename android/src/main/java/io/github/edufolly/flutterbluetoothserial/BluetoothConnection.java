@@ -13,6 +13,8 @@ public interface BluetoothConnection {
     public void disconnect();
     /// Writes to connected remote device
     public void write(byte[] data) throws IOException;
+
+    public void sendFileFromUrl(String url) throws IOException;
     /// Callback for reading data.
     public void onRead(byte[] data);
     /// Callback for disconnection.

@@ -1025,6 +1025,43 @@ public class FlutterBluetoothSerialPlugin implements FlutterPlugin, ActivityAwar
                     break;
                 }
 
+                case "sendFileFromUrl" : {
+                    if (!call.hasArgument("id")) {
+                        result.error("invalid_argument", "argument 'id' not found", null);
+                        break;
+                    }
+
+                    int id;
+                    try {
+                        id = call.argument("id");
+                    } catch (ClassCastException ex) {
+                        result.error("invalid_argument", "'id' argument is required to be integer id of connection", null);
+                        break;
+                    }
+
+                    BluetoothConnection connection = connections.get(id);
+                    if (connection == null) {
+                        result.error("invalid_argument", "there is no connection with provided id", null);
+                        break;
+                    }
+
+                    if (call.hasArgument("string")) {
+                        String string = call.argument("string");
+                        AsyncTask.execute(() -> {
+                            try {
+                                connection.sendFileFromUrl(string);
+                                activity.runOnUiThread(() -> result.success(null));
+                            } catch (Exception ex) {
+                                activity.runOnUiThread(() -> result.error("send_file_error", ex.getMessage(), exceptionToString(ex)));
+                            }
+                        });
+                    } else {
+                        result.error("invalid_argument", "there must be 'string' argument", null);
+                    }
+                    break;
+
+                }
+
                 case "write": {
                     if (!call.hasArgument("id")) {
                         result.error("invalid_argument", "argument 'id' not found", null);

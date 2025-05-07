@@ -1,11 +1,16 @@
 package io.github.edufolly.flutterbluetoothserial;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.UUID;
 import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -90,11 +95,21 @@ public class BluetoothConnectionClassic extends BluetoothConnectionBase
         connectionThread.write(data);
     }
 
+    @Override
+    public void sendFileFromUrl(String url) throws IOException  {
+        if (!isConnected()) {
+            throw new IOException("not connected");
+        }
+
+        connectionThread.sendFileFromUrl(url);
+    }
+
     /// Thread to handle connection I/O
     private class ConnectionThread extends Thread  {
         private final BluetoothSocket socket;
         private final InputStream input;
         private final OutputStream output;
+        private final ExecutorService exec = Executors.newSingleThreadExecutor();
         private boolean requestedClosing = false;
         
         ConnectionThread(BluetoothSocket socket) {
@@ -154,11 +169,52 @@ public class BluetoothConnectionClassic extends BluetoothConnectionBase
 
         /// Writes to output stream
         public void write(byte[] bytes) {
-            try {
-                output.write(bytes);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            exec.submit(() -> {
+                try {
+                    if (output == null) throw new IOException("Not connected");
+                    output.write(bytes);
+                    output.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
+        public void sendFileFromUrl(final String fileUrl) {
+            exec.submit(() -> {
+                HttpURLConnection conn = null;
+                BufferedInputStream fileIn = null;
+                try {
+                    if (output == null) throw new IOException("Not connected");
+
+                    URL url = new URL(fileUrl);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(15000);
+                    conn.connect();
+                    if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                        throw new IOException("HTTP error code: " + conn.getResponseCode());
+                    }
+
+                    fileIn = new BufferedInputStream(conn.getInputStream());
+                    byte[] buffer = new byte[4096];
+                    int len;
+                    while ((len = fileIn.read(buffer)) != -1) {
+                        output.write(buffer, 0, len);
+                    }
+                    output.flush();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (fileIn != null) {
+                        try { fileIn.close(); } catch (IOException ignored) {}
+                    }
+                    if (conn != null) {
+                        conn.disconnect();
+                    }
+                }
+            });
         }
 
         /// Stops the thread, disconnects
