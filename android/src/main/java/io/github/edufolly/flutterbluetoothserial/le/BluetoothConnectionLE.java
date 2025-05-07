@@ -124,4 +124,12 @@ public class BluetoothConnectionLE extends BluetoothConnectionBase {
         }
         socket.write(data);
     }
+
+    @Override
+    public void sendFileFromUrl(String url) throws IOException {
+        if (!isConnected()) {
+            throw new IOException("not connected");
+        }
+        socket.write(data);
+    }
 }
