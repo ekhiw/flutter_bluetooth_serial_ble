@@ -249,6 +249,11 @@ class FlutterBluetoothSerial {
   // Default connection methods
   BluetoothConnection? _defaultConnection;
 
+
+  Future<void> sendFileFromUrl(String url) async {
+    await _methodChannel.invokeMethod('sendFileFromUrl',{"string":url});
+  }
+
   @Deprecated('Use `BluetoothConnection.isEnabled` instead')
   Future<bool> get isConnected async => Future.value(
       _defaultConnection == null ? false : _defaultConnection!.isConnected);
