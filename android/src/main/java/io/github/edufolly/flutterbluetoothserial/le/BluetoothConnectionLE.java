@@ -130,6 +130,6 @@ public class BluetoothConnectionLE extends BluetoothConnectionBase {
         if (!isConnected()) {
             throw new IOException("not connected");
         }
-        socket.write(data);
+        socket.write(url);
     }
 }
