@@ -187,6 +187,25 @@ class _BluetoothStreamSink<Uint8List> extends StreamSink<Uint8List> {
     });
   }
 
+  void sendFileFromUrl(String url) {
+    if (!isConnected) {
+      throw StateError("Not connected!");
+    }
+
+    _chainedFutures = _chainedFutures.then((_) async {
+      if (!isConnected) {
+        throw StateError("Not connected!");
+      }
+
+      await FlutterBluetoothSerial._methodChannel
+          .invokeMethod('sendFileFromUrl', {'id': _id, "string":url});
+    }).catchError((e) {
+      this.exception = e;
+      close();
+    });
+
+  }
+
   /// Unsupported - this ouput sink cannot pass errors to platfom code.
   @override
   void addError(Object error, [StackTrace? stackTrace]) {
