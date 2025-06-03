@@ -843,7 +843,9 @@ public class FlutterBluetoothSerialPlugin implements FlutterPlugin, ActivityAwar
                             return;
                         }
 
+                        Log.d(TAG, "Ekhiw get bonded devices");
                         List<Map<String, Object>> list = new ArrayList<>();
+                        Log.d(TAG, "Ekhiw get bonded devices 2");
                         for (BluetoothDevice device : bluetoothAdapter.getBondedDevices()) {
                             Map<String, Object> entry = new HashMap<>();
                             entry.put("address", device.getAddress());
