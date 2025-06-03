@@ -461,10 +461,12 @@ public class FlutterBluetoothSerialPlugin implements FlutterPlugin, ActivityAwar
                         || ContextCompat.checkSelfPermission(activity,
                         Manifest.permission.BLUETOOTH_CONNECT)
                         != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Ekhiw ensurePermissions 1");
             ActivityCompat.requestPermissions(activity,
                     new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT},
                     REQUEST_COARSE_LOCATION_PERMISSIONS);
 
+            Log.d(TAG, "Ekhiw ensurePermissions 2");
             pendingPermissionsEnsureCallbacks = callbacks;
         } else {
             callbacks.onResult(true);
